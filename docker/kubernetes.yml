@@ -1,0 +1,350 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: cloud-config-server
+  labels:
+    run: cloud-config-server
+spec:
+  ports:
+  - port: 8888
+    protocol: TCP
+  selector:
+    run: cloud-config-server
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloud-config-server
+spec:
+  selector:
+    matchLabels:
+      run: cloud-config-server
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: cloud-config-server
+    spec:
+      containers:
+      - name: cloud-config-server
+        image: "${your-docker-hub-prefix}/cloud-config-server"
+        ports:
+        - containerPort: 8888
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8888
+          initialDelaySeconds: 20
+          periodSeconds: 20
+        env:
+        - name: EUREKA_SERVER_NAME
+          value: "cloud-eureka-server"
+        - name: CONFIG_SERVER_NAME
+          value: "cloud-config-server"
+      imagePullSecrets:
+        - name: ${your-k8s-registry-key}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: cloud-gateway
+  labels:
+    run: cloud-gateway
+spec:
+  ports:
+  - port: 9999
+    protocol: TCP
+  selector:
+    run: cloud-gateway
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloud-gateway
+spec:
+  selector:
+    matchLabels:
+      run: cloud-gateway
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: cloud-gateway
+    spec:
+      containers:
+      - name: cloud-gateway
+        image: "${your-docker-hub-prefix}/cloud-gateway"
+        ports:
+        - containerPort: 9999
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 9999
+          initialDelaySeconds: 20
+          periodSeconds: 20
+        env:
+        - name: EUREKA_SERVER_NAME
+          value: "cloud-eureka-server"
+        - name: CONFIG_SERVER_NAME
+          value: "cloud-config-server"
+      imagePullSecrets:
+        - name: ${your-k8s-registry-key}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: cloud-eureka-server
+  labels:
+    run: cloud-eureka-server
+spec:
+  ports:
+  - port: 8761
+    protocol: TCP
+  selector:
+    run: cloud-eureka-server
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloud-eureka-server
+spec:
+  selector:
+    matchLabels:
+      run: cloud-eureka-server
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: cloud-eureka-server
+    spec:
+      containers:
+      - name: cloud-eureka-server
+        image: "${your-docker-hub-prefix}/cloud-eureka-server"
+        ports:
+        - containerPort: 8761
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8761
+          initialDelaySeconds: 20
+          periodSeconds: 20
+        env:
+        - name: EUREKA_SERVER_NAME
+          value: "cloud-eureka-server"
+        - name: CONFIG_SERVER_NAME
+          value: "cloud-config-server"
+      imagePullSecrets:
+        - name: ${your-k8s-registry-key}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: cloud-hystrix-dashboard
+  labels:
+    run: cloud-hystrix-dashboard
+spec:
+  ports:
+  - port: 7979
+    protocol: TCP
+  selector:
+    run: cloud-hystrix-dashboard
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloud-hystrix-dashboard
+spec:
+  selector:
+    matchLabels:
+      run: cloud-hystrix-dashboard
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: cloud-hystrix-dashboard
+    spec:
+      containers:
+      - name: cloud-hystrix-dashboard
+        image: "${your-docker-hub-prefix}/cloud-hystrix-dashboard"
+        ports:
+        - containerPort: 7979
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 7979
+          initialDelaySeconds: 20
+          periodSeconds: 20
+        env:
+        - name: EUREKA_SERVER_NAME
+          value: "cloud-eureka-server"
+        - name: CONFIG_SERVER_NAME
+          value: "cloud-config-server"
+      imagePullSecrets:
+        - name: ${your-k8s-registry-key}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: event-hub
+  labels:
+    run: event-hub
+spec:
+  ports:
+  - port: 8980
+    protocol: TCP
+  selector:
+    run: event-hub
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: event-hub
+spec:
+  selector:
+    matchLabels:
+      run: event-hub
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: event-hub
+    spec:
+      containers:
+      - name: event-hub
+        image: "${your-docker-hub-prefix}/event-hub"
+        ports:
+        - containerPort: 8980
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8980
+          initialDelaySeconds: 20
+          periodSeconds: 20
+        env:
+        - name: EUREKA_SERVER_NAME
+          value: "cloud-eureka-server"
+        - name: CONFIG_SERVER_NAME
+          value: "cloud-config-server"
+      imagePullSecrets:
+        - name: ${your-k8s-registry-key}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: file-server
+  labels:
+    run: file-server
+spec:
+  ports:
+  - port: 8989
+    protocol: TCP
+  selector:
+    run: file-server
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: file-server
+spec:
+  selector:
+    matchLabels:
+      run: file-server
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: file-server
+    spec:
+      containers:
+      - name: file-server
+        image: "${your-docker-hub-prefix}/file-server"
+        ports:
+        - containerPort: 8989
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8989
+          initialDelaySeconds: 20
+          periodSeconds: 20
+        env:
+        - name: EUREKA_SERVER_NAME
+          value: "cloud-eureka-server"
+        - name: CONFIG_SERVER_NAME
+          value: "cloud-config-server"
+      imagePullSecrets:
+        - name: ${your-k8s-registry-key}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: cache-server
+  labels:
+    run: cache-server
+spec:
+  ports:
+  - port: 8990
+    protocol: TCP
+  selector:
+    run: cache-server
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cache-server
+spec:
+  selector:
+    matchLabels:
+      run: cache-server
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: cache-server
+    spec:
+      containers:
+      - name: cache-server
+        image: "${your-docker-hub-prefix}/cache-server"
+        ports:
+        - containerPort: 8990
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8990
+          initialDelaySeconds: 20
+          periodSeconds: 20
+        env:
+        - name: EUREKA_SERVER_NAME
+          value: "cloud-eureka-server"
+        - name: CONFIG_SERVER_NAME
+          value: "cloud-config-server"
+      imagePullSecrets:
+        - name: ${your-k8s-registry-key}
+
+---
+
